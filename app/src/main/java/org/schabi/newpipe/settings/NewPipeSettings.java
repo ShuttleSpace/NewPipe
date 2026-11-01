@@ -53,6 +53,20 @@ public final class NewPipeSettings {
         PreferenceManager.setDefaultValues(context, R.xml.main_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.video_audio_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.download_settings, true);
+        PreferenceManager.setDefaultValues(context, R.xml.proxy_settings, true);
+        // Ensure the sing-box local-port default is persisted (ListPreference default
+        // values are only applied when the key is absent).
+        final android.content.SharedPreferences sp =
+                PreferenceManager.getDefaultSharedPreferences(context);
+        if (!sp.contains(context.getString(R.string.singbox_local_port_key))) {
+            sp.edit().putString(context.getString(R.string.singbox_local_port_key),
+                    context.getString(R.string.singbox_local_port_default_value)).apply();
+        }
+        // Same for the LAN Hiddify port.
+        if (!sp.contains(context.getString(R.string.lan_port_key))) {
+            sp.edit().putString(context.getString(R.string.lan_port_key),
+                    context.getString(R.string.lan_port_default_value)).apply();
+        }
         PreferenceManager.setDefaultValues(context, R.xml.appearance_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.history_settings, true);
         PreferenceManager.setDefaultValues(context, R.xml.content_settings, true);

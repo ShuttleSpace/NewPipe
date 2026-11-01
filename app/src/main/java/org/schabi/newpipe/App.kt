@@ -23,7 +23,11 @@ import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import java.io.IOException
 import java.io.InterruptedIOException
+import java.net.Authenticator
+import java.net.PasswordAuthentication
+import java.net.Proxy
 import java.net.SocketException
+import okhttp3.OkHttpClient
 import org.acra.ACRA.init
 import org.acra.ACRA.isACRASenderServiceProcess
 import org.acra.config.CoreConfigurationBuilder
@@ -35,7 +39,9 @@ import org.schabi.newpipe.ktx.hasAssignableCause
 import org.schabi.newpipe.settings.NewPipeSettings
 import org.schabi.newpipe.util.BridgeStateSaverInitializer
 import org.schabi.newpipe.util.Localization
+import org.schabi.newpipe.util.ProxyConfig
 import org.schabi.newpipe.util.ServiceHelper
+import org.schabi.newpipe.util.SingBoxManager
 import org.schabi.newpipe.util.StateSaver
 import org.schabi.newpipe.util.image.ImageStrategy
 import org.schabi.newpipe.util.image.PreferredImageQuality
@@ -96,6 +102,9 @@ open class App :
         // Initialize settings first because other initializations can use its values
         NewPipeSettings.initSettings(this)
 
+        // Route process-wide HttpURLConnection traffic (ExoPlayer, Coil, …) through the proxy.
+        applyProxySystemProperties()
+
         NewPipe.init(
             getDownloader(),
             Localization.getPreferredLocalization(this),
@@ -136,9 +145,122 @@ open class App :
         }.build()
 
     protected open fun getDownloader(): Downloader {
-        val downloader = DownloaderImpl.init(null)
+        val builder = OkHttpClient.Builder()
+        applyProxy(builder)
+        val downloader = DownloaderImpl.init(builder)
         setCookiesToDownloader(downloader)
         return downloader
+    }
+
+    /**
+     * Routes OkHttp requests through the configured proxy (HTTP or LAN/Hiddify).
+     * Also used by the debug application, which builds its own client.
+     */
+    protected fun applyProxy(builder: OkHttpClient.Builder) {
+        val proxy = ProxyConfig.getProxy(this)
+        if (proxy != null) {
+            builder.proxy(proxy)
+            val authenticator = ProxyConfig.getOkHttpAuthenticator(this)
+            if (authenticator != null) {
+                builder.proxyAuthenticator(authenticator)
+            }
+        }
+    }
+
+    /**
+     * Applies the configured HTTP proxy process-wide through the standard
+     * {@code http.*}/{@code https.*} system properties. This routes every
+     * {@link java.net.HttpURLConnection} through the proxy, which covers the network paths that
+     * cannot be configured directly (e.g. ExoPlayer's {@code DefaultHttpDataSource} used for live
+     * streams) and Coil thumbnails. The OkHttp downloader and the YouTube data source set the proxy
+     * explicitly and therefore take precedence over these properties.
+     */
+    private fun applyProxySystemProperties() {
+        // Always clear any previous HTTP-proxy system properties first; the sing-box
+        // branch re-sets them to the local endpoint afterwards.
+        System.clearProperty("http.proxyHost")
+        System.clearProperty("http.proxyPort")
+        System.clearProperty("https.proxyHost")
+        System.clearProperty("https.proxyPort")
+        Authenticator.setDefault(null)
+
+        when (ProxyConfig.getMode(this)) {
+            getString(R.string.proxy_mode_http_value) -> applyHttpProxy()
+            getString(R.string.proxy_mode_lan_value) -> applyLanProxy()
+            getString(R.string.proxy_mode_singbox_value) -> startSingBoxProxy()
+        }
+    }
+
+    private fun applyHttpProxy() {
+        if (!ProxyConfig.isHttpMode(this)) {
+            return
+        }
+        setHttpProxySystemProperties(ProxyConfig.getHost(this), ProxyConfig.getPort(this))
+        val user = ProxyConfig.getUser(this)
+        val password = ProxyConfig.getPassword(this)
+        if (user.isNotEmpty() && password.isNotEmpty()) {
+            Authenticator.setDefault(object : Authenticator() {
+                override fun getPasswordAuthentication(): PasswordAuthentication? {
+                    if (requestorType == RequestorType.PROXY) {
+                        return PasswordAuthentication(user, password.toCharArray())
+                    }
+                    return null
+                }
+            })
+        }
+    }
+
+    private fun applyLanProxy() {
+        if (!ProxyConfig.isLanMode(this)) {
+            return
+        }
+        setHttpProxySystemProperties(
+            ProxyConfig.getLanHost(this),
+            ProxyConfig.getLanPort(this)
+        )
+    }
+
+    private fun setHttpProxySystemProperties(host: String, port: Int) {
+        if (host.isEmpty() || port <= 0) {
+            return
+        }
+        System.setProperty("http.proxyHost", host)
+        System.setProperty("http.proxyPort", port.toString())
+        System.setProperty("https.proxyHost", host)
+        System.setProperty("https.proxyPort", port.toString())
+    }
+
+    private fun startSingBoxProxy() {
+        val config = ProxyConfig.getEffectiveSingBoxConfig(this)
+        if (config.isBlank()) {
+            Log.w(TAG, "sing-box mode selected but no config provided")
+            return
+        }
+        val manager = SingBoxManager.getInstance(
+            this,
+            object : SingBoxManager.Callback {
+                override fun onStarted(port: Int) {
+                    // Route all HttpURLConnection traffic through the local sing-box endpoint.
+                    System.setProperty("http.proxyHost", "127.0.0.1")
+                    System.setProperty("http.proxyPort", if (port > 0) port.toString() else "2333")
+                    System.setProperty("https.proxyHost", "127.0.0.1")
+                    System.setProperty("https.proxyPort", if (port > 0) port.toString() else "2333")
+                    Log.i(TAG, "sing-box started, proxy -> 127.0.0.1:${if (port > 0) port else 2333}")
+                }
+
+                override fun onStopped() {
+                    System.clearProperty("http.proxyHost")
+                    System.clearProperty("http.proxyPort")
+                    System.clearProperty("https.proxyHost")
+                    System.clearProperty("https.proxyPort")
+                }
+
+                override fun onError(message: String) {
+                    Log.e(TAG, "sing-box error: $message")
+                }
+            }
+        )
+        manager.start(config)
     }
 
     protected fun setCookiesToDownloader(downloader: DownloaderImpl) {

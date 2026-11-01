@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/proxy_settings_title">
+
+    <!--
+      Master selector: choose which proxy mechanism is active.
+      "HTTP 代理" and "Sing-box" are peer features; only one can be used at a time.
+    -->
+    <ListPreference
+        android:defaultValue="@string/proxy_mode_off_value"
+        android:entries="@array/proxy_mode_entries"
+        android:entryValues="@array/proxy_mode_values"
+        android:key="@string/proxy_mode_key"
+        android:summary="@string/proxy_mode_summary"
+        android:title="@string/proxy_mode_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <!--
+      Upstream proxy endpoint, shared by both modes:
+      - http mode: NewPipe connects to it directly;
+      - sing-box mode: the built-in sing-box forwards to it.
+      Visibility is controlled by the proxy_mode ListPreference in ProxySettingsFragment.
+    -->
+    <EditTextPreference
+        android:inputType="textUri|textNoSuggestions"
+        android:key="@string/proxy_host_key"
+        android:summary="@string/proxy_host_summary"
+        android:title="@string/proxy_host_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="number"
+        android:maxLength="5"
+        android:key="@string/proxy_port_key"
+        android:summary="@string/proxy_port_summary"
+        android:title="@string/proxy_port_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="textNoSuggestions"
+        android:key="@string/proxy_user_key"
+        android:summary="@string/proxy_user_summary"
+        android:title="@string/proxy_user_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:key="@string/proxy_password_key"
+        android:summary="@string/proxy_password_summary"
+        android:title="@string/proxy_password_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <!-- ===== HTTP proxy only: import from text ===== -->
+    <Preference
+        android:key="@string/proxy_import_help_key"
+        android:title="@string/proxy_import_help_title"
+        android:summary="@string/proxy_import_help_summary"
+        android:icon="@drawable/ic_info_outline"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:key="@string/proxy_import_key"
+        android:summary="@string/proxy_import_summary"
+        android:title="@string/proxy_import_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <!-- ===== LAN proxy: Hiddify on another computer ===== -->
+    <Preference
+        android:key="@string/lan_scan_key"
+        android:title="@string/lan_scan_title"
+        android:summary="@string/lan_scan_summary"
+        android:icon="@drawable/ic_search"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="textUri|textNoSuggestions"
+        android:key="@string/lan_host_key"
+        android:summary="@string/lan_host_summary"
+        android:title="@string/lan_host_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:defaultValue="@string/lan_port_default_value"
+        android:inputType="number"
+        android:maxLength="5"
+        android:key="@string/lan_port_key"
+        android:summary="@string/lan_port_summary"
+        android:title="@string/lan_port_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="@string/lan_test_key"
+        android:title="@string/lan_test_title"
+        android:summary="@string/lan_test_summary"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <!-- ===== Built-in sing-box (libbox) ===== -->
+    <ListPreference
+        android:defaultValue="@string/singbox_outbound_default_value"
+        android:entries="@array/singbox_outbound_entries"
+        android:entryValues="@array/singbox_outbound_values"
+        android:key="@string/singbox_outbound_type_key"
+        android:summary="@string/singbox_outbound_summary"
+        android:title="@string/singbox_outbound_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:defaultValue="@string/singbox_local_port_default_value"
+        android:inputType="number"
+        android:maxLength="5"
+        android:key="@string/singbox_local_port_key"
+        android:summary="@string/singbox_local_port_summary"
+        android:title="@string/singbox_local_port_title"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <EditTextPreference
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:key="@string/singbox_config_key"
+        android:summary="@string/singbox_config_summary"
+        android:title="@string/singbox_config_title"
+        android:dialogMessage="@string/singbox_config_dialog_message"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+    <Preference
+        android:key="@string/proxy_restart_key"
+        android:title="@string/proxy_restart_title"
+        android:summary="@string/proxy_restart_summary"
+        android:icon="@drawable/ic_refresh"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
+</PreferenceScreen>

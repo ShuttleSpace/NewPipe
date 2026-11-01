@@ -272,6 +272,11 @@ dependencies {
     implementation(libs.squareup.okhttp)
     implementation(libs.squareup.okhttp.brotli)
 
+    // Built-in sing-box (libbox) - optional local proxy engine.
+    // The AAR is built from source (see scripts/build_libbox.sh) and is only present
+    // when the sing-box proxy mode is intended to be used.
+    implementation(files("libs/libbox.aar"))
+
     // Media player
     implementation(libs.google.exoplayer.core)
     implementation(libs.google.exoplayer.dash)

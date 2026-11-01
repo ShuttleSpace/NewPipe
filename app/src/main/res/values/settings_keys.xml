@@ -1506,6 +1506,40 @@
     <string name="use_exoplayer_decoder_fallback_key">use_exoplayer_decoder_fallback_key</string>
     <string name="always_use_exoplayer_set_output_surface_workaround_key">always_use_exoplayer_set_output_surface_workaround_key</string>
 
+    <!-- Proxy mode: off / http / sing-box (mutually exclusive, peer features) -->
+    <string name="proxy_mode_key">proxy_mode</string>
+    <string name="proxy_mode_off_value">off</string>
+    <string name="proxy_mode_http_value">http</string>
+    <string name="proxy_mode_singbox_value">singbox</string>
+    <string name="proxy_mode_lan_value">lan</string>
+
+    <!-- HTTP proxy (used to access YouTube from restricted networks) -->
+    <string name="proxy_enabled_key">proxy_enabled</string>
+    <string name="proxy_host_key">proxy_host</string>
+    <string name="proxy_port_key">proxy_port</string>
+    <string name="proxy_user_key">proxy_user</string>
+    <string name="proxy_password_key">proxy_password</string>
+    <string name="proxy_import_key">proxy_import</string>
+    <string name="proxy_import_help_key">proxy_import_help</string>
+    <string name="proxy_restart_key">proxy_restart</string>
+
+    <!-- LAN proxy: Hiddify (or any HTTP/mixed proxy) running on another computer -->
+    <string name="lan_host_key">lan_proxy_host</string>
+    <string name="lan_port_key">lan_proxy_port</string>
+    <string name="lan_port_default_value">12334</string>
+    <string name="lan_scan_key">lan_proxy_scan</string>
+    <string name="lan_test_key">lan_proxy_test</string>
+
+    <!-- Built-in sing-box (libbox) -->
+    <string name="singbox_outbound_type_key">singbox_outbound_type</string>
+    <string name="singbox_outbound_http_value">http</string>
+    <string name="singbox_outbound_socks_value">socks</string>
+    <string name="singbox_outbound_default_value">http</string>
+    <string name="singbox_config_key">singbox_config</string>
+    <string name="singbox_local_port_key">singbox_local_port</string>
+    <string name="singbox_running_key">singbox_running</string>
+    <string name="singbox_last_error_key">singbox_last_error</string>
+
     <!-- Image quality -->
     <string name="image_quality_key">image_quality_key</string>
     <string name="image_quality_none_key">image_quality_none</string>

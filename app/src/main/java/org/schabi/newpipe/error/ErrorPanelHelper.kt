@@ -75,7 +75,9 @@ class ErrorPanelHelper(
                 fragment.startActivityForResult(intent, ReCaptchaActivity.RECAPTCHA_REQUEST)
                 errorActionButton.setOnClickListener(null)
             }
-        } else if (errorInfo.isReportable) {
+        } else if (errorInfo.isReportable || errorInfo.stackTraces.isNotEmpty()) {
+            // Even for non-reportable (e.g. network) errors, offer a way to inspect the
+            // stack trace in the error activity via the "Report" action.
             showAndSetErrorButtonAction(R.string.error_snackbar_action) {
                 ErrorUtil.openActivity(context, errorInfo)
             }
@@ -117,6 +119,25 @@ class ErrorPanelHelper(
 
     private fun setRootVisible() {
         errorPanelRoot.animate(true, 300)
+        focusFirstVisibleButton()
+    }
+
+    /**
+     * The panel overlays the content, so on TV the D-pad focus stays on the list behind it
+     * unless it is moved into the panel explicitly.
+     */
+    private fun focusFirstVisibleButton() {
+        val firstVisibleButton = arrayOf(
+            errorRetryButton,
+            errorActionButton,
+            errorOpenInBrowserButton
+        ).firstOrNull { it.isVisible && it.isFocusable } ?: return
+
+        errorPanelRoot.post {
+            if (errorPanelRoot.isVisible) {
+                firstVisibleButton.requestFocus()
+            }
+        }
     }
 
     fun hide() {

@@ -51,6 +51,7 @@ import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -94,6 +95,11 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
 
         private boolean rangeParameterEnabled;
         private boolean rnParameterEnabled;
+
+        @Nullable
+        private Proxy proxy;
+        @Nullable
+        private String proxyAuthorization;
 
         /**
          * Creates an instance.
@@ -193,6 +199,30 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
         }
 
         /**
+         * Sets the {@link Proxy} used for YouTube connections, so streams can be reached through an
+         * HTTP proxy (e.g. from a restricted network).
+         *
+         * @param proxyToUse the {@link Proxy} to use, or {@code null} to disable it
+         * @return this factory, for chaining
+         */
+        public Factory setProxy(@Nullable final Proxy proxyToUse) {
+            this.proxy = proxyToUse;
+            return this;
+        }
+
+        /**
+         * Sets a pre-built {@code Proxy-Authorization} header, used when connecting through an
+         * authenticated HTTP proxy.
+         *
+         * @param proxyAuthorizationToUse the header value, or {@code null} to disable it
+         * @return this factory, for chaining
+         */
+        public Factory setProxyAuthorization(@Nullable final String proxyAuthorizationToUse) {
+            this.proxyAuthorization = proxyAuthorizationToUse;
+            return this;
+        }
+
+        /**
          * Sets a content type {@link Predicate}. If a content type is rejected by the predicate
          * then a {@link HttpDataSource.InvalidContentTypeException} is thrown from
          * {@link YoutubeHttpDataSource#open(DataSpec)}.
@@ -251,7 +281,9 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
                     rnParameterEnabled,
                     defaultRequestProperties,
                     contentTypePredicate,
-                    keepPostFor302Redirects);
+                    keepPostFor302Redirects,
+                    proxy,
+                    proxyAuthorization);
             if (transferListener != null) {
                 dataSource.addTransferListener(transferListener);
             }
@@ -281,6 +313,11 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
     private final boolean keepPostFor302Redirects;
 
     @Nullable
+    private final Proxy proxy;
+    @Nullable
+    private final String proxyAuthorization;
+
+    @Nullable
     private final Predicate<String> contentTypePredicate;
     @Nullable
     private DataSpec dataSpec;
@@ -303,7 +340,9 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
                                   final boolean rnParameterEnabled,
                                   @Nullable final RequestProperties defaultRequestProperties,
                                   @Nullable final Predicate<String> contentTypePredicate,
-                                  final boolean keepPostFor302Redirects) {
+                                  final boolean keepPostFor302Redirects,
+                                  @Nullable final Proxy proxy,
+                                  @Nullable final String proxyAuthorization) {
         super(true);
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
@@ -314,6 +353,8 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
         this.contentTypePredicate = contentTypePredicate;
         this.requestProperties = new RequestProperties();
         this.keepPostFor302Redirects = keepPostFor302Redirects;
+        this.proxy = proxy;
+        this.proxyAuthorization = proxyAuthorization;
         this.requestNumber = 0;
     }
 
@@ -697,7 +738,13 @@ public final class YoutubeHttpDataSource extends BaseDataSource implements HttpD
      * @return an {@link HttpURLConnection} created with the {@code url}
      */
     private HttpURLConnection openConnection(@NonNull final URL url) throws IOException {
-        return (HttpURLConnection) url.openConnection();
+        final HttpURLConnection urlConnection = (HttpURLConnection) (proxy != null
+                ? url.openConnection(proxy)
+                : url.openConnection());
+        if (proxyAuthorization != null) {
+            urlConnection.setRequestProperty("Proxy-Authorization", proxyAuthorization);
+        }
+        return urlConnection;
     }
 
     /**

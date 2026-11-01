@@ -20,6 +20,97 @@
     <string name="search_with_service_name">Search %1$s</string>
     <string name="search_with_service_name_and_filter">Search %1$s (%2$s)</string>
     <string name="settings">Settings</string>
+
+    <!-- Proxy settings (HTTP proxy &amp; built-in sing-box). Used to reach YouTube from
+         restricted networks, e.g. behind a GFW. All strings are translatable. -->
+    <string name="proxy_settings_title" translatable="true">代理设置</string>
+
+    <string name="proxy_mode_title" translatable="true">代理模式</string>
+    <string name="proxy_mode_off" translatable="true">关闭</string>
+    <string name="proxy_mode_http" translatable="true">HTTP 代理</string>
+    <string name="proxy_mode_singbox" translatable="true">Sing-box</string>
+    <string name="proxy_mode_lan" translatable="true">局域网 (Hiddify)</string>
+    <string name="proxy_mode_summary" translatable="true">选择用于访问 YouTube 的代理方式：关闭、填写外部 HTTP 代理地址、连接局域网电脑上的 Hiddify，或在应用内运行 Sing-box。</string>
+    <string-array name="proxy_mode_entries" translatable="true">
+        <item>@string/proxy_mode_off</item>
+        <item>@string/proxy_mode_http</item>
+        <item>@string/proxy_mode_lan</item>
+        <item>@string/proxy_mode_singbox</item>
+    </string-array>
+    <string-array name="proxy_mode_values">
+        <item>@string/proxy_mode_off_value</item>
+        <item>@string/proxy_mode_http_value</item>
+        <item>@string/proxy_mode_lan_value</item>
+        <item>@string/proxy_mode_singbox_value</item>
+    </string-array>
+
+    <string name="proxy_enabled_title" translatable="true">启用 HTTP 代理</string>
+    <string name="proxy_enabled_summary" translatable="true">通过该代理路由全部网络流量（元数据、播放与下载）。</string>
+    <string name="proxy_host_title" translatable="true">代理主机</string>
+    <string name="proxy_host_summary" translatable="true">HTTP 代理的主机名或 IP 地址</string>
+    <string name="proxy_port_title" translatable="true">代理端口</string>
+    <string name="proxy_port_summary" translatable="true">HTTP 代理的端口（1–65535）</string>
+    <string name="proxy_user_title" translatable="true">代理用户名</string>
+    <string name="proxy_user_summary" translatable="true">若代理无需认证可留空</string>
+    <string name="proxy_password_title" translatable="true">代理密码</string>
+    <string name="proxy_password_summary" translatable="true">若代理无需认证可留空</string>
+    <string name="proxy_summary_disabled" translatable="true">已关闭</string>
+    <string name="proxy_summary_enabled" translatable="true">已启用：%1$s:%2$s</string>
+    <string name="proxy_import_title" translatable="true">从文本导入配置</string>
+    <string name="proxy_import_summary" translatable="true">粘贴多行文本，自动填充上面的字段并启用代理</string>
+    <string name="proxy_import_dialog_message" translatable="true">每行一个 key=value。可识别的键：host / address / ip、port、user / username、password / pass。</string>
+    <string name="proxy_import_help_title" translatable="true">导入格式说明</string>
+    <string name="proxy_import_help_summary" translatable="true">点击查看支持的关键字与示例</string>
+    <string name="proxy_import_help_message" translatable="true">支持的格式（每行 key=value，键名不区分大小写，可省略 proxy./http. 前缀）：\n\n  host / address / ip      代理主机\n  port                    端口\n  user / username         用户名（可选）\n  password / pass         密码（可选）\n\n示例：\n  host=192.168.1.10\n  port=8080\n  user=alice\n  password=secret</string>
+    <string name="proxy_import_success" translatable="true">已导入 %1$d 个字段并启用代理，重启 NewPipe 后生效。</string>
+    <string name="proxy_import_failed" translatable="true">粘贴的文本中没有识别到有效的代理配置。</string>
+    <string name="proxy_field_configured" translatable="true">已设置</string>
+    <string name="proxy_restart_hint" translatable="true">代理设置已保存，需完全重启 NewPipe 才会生效。</string>
+    <string name="proxy_restart_title" translatable="true">立即重启 NewPipe</string>
+    <string name="proxy_restart_summary" translatable="true">修改代理设置后点此重启，使新设置生效</string>
+
+    <string name="lan_scan_title" translatable="true">扫描局域网 Hiddify</string>
+    <string name="lan_scan_summary" translatable="true">自动查找同一局域网内开放 Hiddify 端口的电脑</string>
+    <string name="lan_host_title" translatable="true">电脑 IP 地址</string>
+    <string name="lan_host_summary" translatable="true">运行 Hiddify 的电脑的局域网 IP（需在 Hiddify 开启「允许局域网连接」）</string>
+    <string name="lan_port_title" translatable="true">Hiddify 端口</string>
+    <string name="lan_port_summary" translatable="true">Hiddify 的 mixed 端口（默认 12334）</string>
+    <string name="lan_test_title" translatable="true">测试连接</string>
+    <string name="lan_test_summary" translatable="true">检查该地址的 Hiddify 端口是否可达</string>
+    <string name="lan_scanning" translatable="true">正在扫描局域网…</string>
+    <string name="lan_scan_empty" translatable="true">未发现 Hiddify。请确认电脑上的 Hiddify 已开启「允许局域网连接」，且电视与电脑处于同一网络；也可以手动填写 IP。</string>
+    <string name="lan_scan_found_title" translatable="true">选择 Hiddify 主机</string>
+    <string name="lan_test_invalid" translatable="true">请先填写电脑 IP 和端口</string>
+    <string name="lan_testing" translatable="true">正在测试连接…</string>
+    <string name="lan_test_ok" translatable="true">连接成功：%1$s:%2$d 可达</string>
+    <string name="lan_test_fail" translatable="true">无法连接 %1$s:%2$d，请检查 IP、端口以及 Hiddify 的「允许局域网连接」设置</string>
+
+    <string name="singbox_outbound_title" translatable="true">上游代理类型</string>
+    <string name="singbox_outbound_summary" translatable="true">远端代理的协议：HTTP 或 SOCKS5</string>
+    <string name="singbox_outbound_http" translatable="true">HTTP</string>
+    <string name="singbox_outbound_socks" translatable="true">SOCKS5</string>
+    <string-array name="singbox_outbound_entries" translatable="true">
+        <item>@string/singbox_outbound_http</item>
+        <item>@string/singbox_outbound_socks</item>
+    </string-array>
+    <string-array name="singbox_outbound_values" translatable="false">
+        <item>@string/singbox_outbound_http_value</item>
+        <item>@string/singbox_outbound_socks_value</item>
+    </string-array>
+    <string name="singbox_config_title" translatable="true">高级：手写 JSON 配置</string>
+    <string name="singbox_config_summary" translatable="true">留空则用上面的服务器信息自动生成配置</string>
+    <string name="singbox_config_dialog_message" translatable="true">粘贴完整的 sing-box config.json。填写后将忽略上面的服务器字段，直接使用此 JSON。仅本地使用，不会上传。</string>
+    <string name="singbox_config_generated" translatable="true">已自动生成：%1$s</string>
+    <string name="singbox_config_custom" translatable="true">已使用手写 JSON</string>
+    <string name="singbox_local_port_title" translatable="true">本地监听端口</string>
+    <string name="singbox_local_port_summary" translatable="true">Sing-box 在本机暴露的 HTTP/SOCKS 端口（默认 2333）</string>
+    <string name="singbox_local_port_default_value" translatable="false">2333</string>
+    <string name="singbox_starting" translatable="true">正在启动 Sing-box…</string>
+    <string name="singbox_stopping" translatable="true">正在停止 Sing-box…</string>
+    <string name="singbox_started" translatable="true">Sing-box 已启动（本地代理 %1$s:%2$s）</string>
+    <string name="singbox_not_running" translatable="true">Sing-box 未运行</string>
+    <string name="singbox_error" translatable="true">Sing-box 启动失败：%1$s</string>
+    <string name="singbox_not_supported" translatable="true">此版本未包含 Sing-box 支持。</string>
     <string name="did_you_mean">Did you mean \"%1$s\"?</string>
     <string name="search_showing_result_for">Showing results for: %s</string>
     <string name="share_dialog_title">Share with</string>
