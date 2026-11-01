@@ -8,7 +8,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.schabi.newpipe.App;
 import org.schabi.newpipe.DownloaderImpl;
+import org.schabi.newpipe.util.ProxyConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,6 +19,7 @@ import java.io.InterruptedIOException;
 import java.io.Serializable;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -219,7 +222,19 @@ public class DownloadMission extends Mission {
     }
 
     HttpURLConnection openConnection(String url, boolean headRequest, long rangeStart, long rangeEnd) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        final URL targetUrl = new URL(url);
+        // Route the download through the configured HTTP proxy so streams can be fetched from
+        // restricted networks (e.g. behind the GFW).
+        final Proxy proxy = ProxyConfig.getProxy(App.getInstance());
+        final HttpURLConnection conn = (HttpURLConnection) (proxy != null
+                ? targetUrl.openConnection(proxy)
+                : targetUrl.openConnection());
+
+        final String proxyAuth = ProxyConfig.getProxyAuthorizationHeader(App.getInstance());
+        if (proxyAuth != null) {
+            conn.setRequestProperty("Proxy-Authorization", proxyAuth);
+        }
+
         conn.setInstanceFollowRedirects(true);
         conn.setRequestProperty("User-Agent", DownloaderImpl.USER_AGENT);
         conn.setRequestProperty("Accept", "*/*");

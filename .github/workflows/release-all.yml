@@ -1,0 +1,118 @@
+name: Build and publish all-platform artifacts
+
+# Builds the Android APKs (per-ABI + universal), the desktop packages (Linux/Windows/macOS)
+# and uploads everything to a GitHub release.
+#
+# This is a Kotlin Multiplatform (KMM) project:
+#   - :app        -> Android app (our proxy changes live here)
+#   - :shared     -> KMP Compose Multiplatform module
+#   - :desktopApp -> Compose Desktop (Linux .deb / Windows .msi / macOS .dmg)
+#   - iosApp      -> Xcode project (not wired up in this fork yet, so it is not built here)
+#
+# Trigger: push a tag like v0.29.1, or run manually with workflow_dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create/update"
+        required: false
+        default: "continuous"
+      prerelease:
+        description: "Mark as pre-release"
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "gradle"
+
+      - name: Download libbox.aar (built-in sing-box engine)
+        run: |
+          mkdir -p app/libs
+          curl -fSL -o app/libs/libbox.aar \
+            https://github.com/ShuttleSpace/NewPipe/releases/download/libbox/libbox.aar
+
+      - name: Build per-ABI APKs
+        run: ./gradlew :app:assembleContinuous -PabiSplits=true -DskipFormatKtlint -x runKtlint -x runCheckstyle --stacktrace
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-apks
+          path: app/build/outputs/apk/continuous/*.apk
+
+  desktop:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+          artifact: desktop-linux
+          path: desktopApp/build/compose/binaries/main/deb/**
+          ext: "*.deb"
+          - os: windows-latest
+          artifact: desktop-windows
+          path: desktopApp/build/compose/binaries/main/msi/**
+          ext: "*.msi"
+          - os: macos-latest
+          artifact: desktop-macos
+          path: desktopApp/build/compose/binaries/main/dmg/**
+          ext: "*.dmg"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "gradle"
+
+      - name: Build desktop distribution
+        run: ./gradlew :desktopApp:packageDistributionForCurrentOS -DskipFormatKtlint -x runKtlint -x runCheckstyle --stacktrace
+
+      - name: Upload distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.path }}
+
+  release:
+    needs: [android, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -R dist
+
+      - name: Create / update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          prerelease: ${{ github.event.inputs.prerelease || 'true' }}
+          fail_on_unmatched_files: false
+          generate_release_notes: true
+          files: |
+            dist/**/*.apk
+            dist/**/*.deb
+            dist/**/*.msi
+            dist/**/*.dmg

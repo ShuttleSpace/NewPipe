@@ -31,6 +31,55 @@
 >
 > <b>"NewPipe" IS A REGISTERED WORD MARK SUBJECT TO [ITS TRADEMARK POLICY](https://newpipe-ev.de/policy/trademark/). INFRINGING APPLICATIONS WILL NOT BE TOLERATED.</b>
 
+## Fork additions (ShuttleSpace/NewPipe `dev`)
+
+This fork adds proxy support for restrictive networks (e.g. behind a GFW) and improves TV
+remote navigation. All new UI strings are translatable (default English, 简体中文 under
+`values-zh`).
+
+### Proxy modes (Settings → Proxy settings)
+
+- **Off** — unchanged upstream behaviour.
+- **HTTP proxy** — fill `host` / `port` and optional `user` / `password`, or paste a
+  `key=value` block to import them. An info button explains the format.
+- **LAN (Hiddify)** — point the TV at a Hiddify instance on another computer: enter the PC's
+  LAN IP and port (default `12334`), use **Scan LAN for Hiddify** to auto-discover it,
+  **Test connection** to verify reachability, then **Restart NewPipe now** for the change to
+  apply. On the PC, enable **Allow LAN** in Hiddify and allow the port through the OS
+  firewall.
+- **Sing-box** — a built-in sing-box (`libbox`) engine. Fill the upstream
+  `host` / `port` / `user` / `password` (shared with the HTTP fields), choose the upstream
+  type (HTTP or SOCKS5), set the local listen port (default `2333`); the app generates the
+  config. Advanced users can paste a full `config.json` instead.
+
+### TV / remote control
+
+- The network error panel keeps its **Report** button (opens `ErrorActivity` with the full
+  stack trace) and all buttons are reachable with the D-pad; the default focus is on
+  **Retry**.
+- See [doc/libbox.md](doc/libbox.md) for how the sing-box AAR is built and the pitfalls.
+
+### Building
+
+Requires JDK 21, the Android SDK (compile 37) and a NDK (for libbox). The `libbox.aar` is
+~92 MB and is intentionally **not** committed; it is fetched from the `libbox` GitHub
+release automatically:
+
+```bash
+# optionally provide your own build
+curl -fSL -o app/libs/libbox.aar \
+  https://github.com/ShuttleSpace/NewPipe/releases/download/libbox/libbox.aar
+
+./gradlew :app:assembleContinuous                   # single APK
+./gradlew :app:assembleContinuous -PabiSplits=true   # per-ABI + universal APKs
+./gradlew :desktopApp:packageDistributionForCurrentOS # desktop package for the current OS
+```
+
+> **Note:** the iOS target (`iosApp`) is part of the upstream KMM layout but is **not wired
+> up in this fork** (its Xcode build phase references a `:composeApp` module that does not
+> exist here), so it is not produced by the release workflow.
+
+
 ## Screenshots
 
 [<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/00.png" width=160>](fastlane/metadata/android/en-US/images/phoneScreenshots/00.png)

@@ -44,6 +44,9 @@
 
 
     <Button
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:foreground="@drawable/error_panel_button_foreground"
         android:id="@+id/error_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -58,6 +61,9 @@
         tools:visibility="visible" />
 
     <Button
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:foreground="@drawable/error_panel_button_foreground"
         android:id="@+id/error_retry_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -72,6 +78,9 @@
         tools:visibility="visible" />
 
     <Button
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:foreground="@drawable/error_panel_button_foreground"
         android:id="@+id/error_open_in_browser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

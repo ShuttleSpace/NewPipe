@@ -20,6 +20,97 @@
     <string name="search_with_service_name">Search %1$s</string>
     <string name="search_with_service_name_and_filter">Search %1$s (%2$s)</string>
     <string name="settings">Settings</string>
+
+    <!-- Proxy settings (HTTP proxy &amp; built-in sing-box). Used to reach YouTube from
+         restricted networks, e.g. behind a GFW. All strings are translatable. -->
+    <string name="proxy_settings_title" translatable="true">Proxy settings</string>
+
+    <string name="proxy_mode_title" translatable="true">Proxy mode</string>
+    <string name="proxy_mode_off" translatable="true">Off</string>
+    <string name="proxy_mode_http" translatable="true">HTTP proxy</string>
+    <string name="proxy_mode_singbox" translatable="true">Sing-box</string>
+    <string name="proxy_mode_lan" translatable="true">LAN (Hiddify)</string>
+    <string name="proxy_mode_summary" translatable="true">Choose how NewPipe reaches YouTube: off, an external HTTP proxy, Hiddify on a computer in your LAN, or the built-in sing-box.</string>
+    <string-array name="proxy_mode_entries" translatable="true">
+        <item>@string/proxy_mode_off</item>
+        <item>@string/proxy_mode_http</item>
+        <item>@string/proxy_mode_lan</item>
+        <item>@string/proxy_mode_singbox</item>
+    </string-array>
+    <string-array name="proxy_mode_values">
+        <item>@string/proxy_mode_off_value</item>
+        <item>@string/proxy_mode_http_value</item>
+        <item>@string/proxy_mode_lan_value</item>
+        <item>@string/proxy_mode_singbox_value</item>
+    </string-array>
+
+    <string name="proxy_enabled_title" translatable="true">Enable HTTP proxy</string>
+    <string name="proxy_enabled_summary" translatable="true">Route all network traffic (metadata, playback and downloads) through the proxy.</string>
+    <string name="proxy_host_title" translatable="true">Proxy host</string>
+    <string name="proxy_host_summary" translatable="true">Hostname or IP address of the HTTP proxy</string>
+    <string name="proxy_port_title" translatable="true">Proxy port</string>
+    <string name="proxy_port_summary" translatable="true">HTTP proxy port (1–65535)</string>
+    <string name="proxy_user_title" translatable="true">Proxy username</string>
+    <string name="proxy_user_summary" translatable="true">Leave empty if the proxy needs no authentication</string>
+    <string name="proxy_password_title" translatable="true">Proxy password</string>
+    <string name="proxy_password_summary" translatable="true">Leave empty if the proxy needs no authentication</string>
+    <string name="proxy_summary_disabled" translatable="true">Disabled</string>
+    <string name="proxy_summary_enabled" translatable="true">Enabled: %1$s:%2$s</string>
+    <string name="proxy_import_title" translatable="true">Import from text</string>
+    <string name="proxy_import_summary" translatable="true">Paste multiple lines to fill the fields above and enable the proxy</string>
+    <string name="proxy_import_dialog_message" translatable="true">One key=value per line. Recognised keys: host / address / ip, port, user / username, password / pass.</string>
+    <string name="proxy_import_help_title" translatable="true">Import format</string>
+    <string name="proxy_import_help_summary" translatable="true">Tap to see the supported keys and an example</string>
+    <string name="proxy_import_help_message" translatable="true">Supported format (one key=value per line, keys are case-insensitive, an optional proxy./http. prefix is ignored):\n\n  host / address / ip      proxy host\n  port                    port\n  user / username         username (optional)\n  password / pass         password (optional)\n\nExample:\n  host=192.168.1.10\n  port=8080\n  user=alice\n  password=secret</string>
+    <string name="proxy_import_success" translatable="true">Imported %1$d fields and enabled the proxy. Restart NewPipe to apply.</string>
+    <string name="proxy_import_failed" translatable="true">No valid proxy configuration was found in the pasted text.</string>
+    <string name="proxy_field_configured" translatable="true">Configured</string>
+    <string name="proxy_restart_hint" translatable="true">Proxy settings saved. A full restart of NewPipe is required to apply them.</string>
+    <string name="proxy_restart_title" translatable="true">Restart NewPipe now</string>
+    <string name="proxy_restart_summary" translatable="true">Tap to restart and apply the new proxy settings</string>
+
+    <string name="lan_scan_title" translatable="true">Scan LAN for Hiddify</string>
+    <string name="lan_scan_summary" translatable="true">Find computers on the same network that expose the Hiddify port</string>
+    <string name="lan_host_title" translatable="true">Computer IP address</string>
+    <string name="lan_host_summary" translatable="true">LAN IP of the computer running Hiddify (enable "Allow LAN" in Hiddify)</string>
+    <string name="lan_port_title" translatable="true">Hiddify port</string>
+    <string name="lan_port_summary" translatable="true">Hiddify mixed port (default 12334)</string>
+    <string name="lan_test_title" translatable="true">Test connection</string>
+    <string name="lan_test_summary" translatable="true">Check whether the Hiddify port is reachable</string>
+    <string name="lan_scanning" translatable="true">Scanning the local network…</string>
+    <string name="lan_scan_empty" translatable="true">No Hiddify found. Make sure Hiddify on the computer has "Allow LAN" enabled and that the TV is on the same network; you can also enter the IP manually.</string>
+    <string name="lan_scan_found_title" translatable="true">Select a Hiddify host</string>
+    <string name="lan_test_invalid" translatable="true">Enter the computer IP and port first</string>
+    <string name="lan_testing" translatable="true">Testing connection…</string>
+    <string name="lan_test_ok" translatable="true">Connected: %1$s:%2$d is reachable</string>
+    <string name="lan_test_fail" translatable="true">Cannot connect to %1$s:%2$d. Check the IP, port and the "Allow LAN" setting in Hiddify.</string>
+
+    <string name="singbox_outbound_title" translatable="true">Upstream proxy type</string>
+    <string name="singbox_outbound_summary" translatable="true">Protocol of the remote proxy: HTTP or SOCKS5</string>
+    <string name="singbox_outbound_http" translatable="true">HTTP</string>
+    <string name="singbox_outbound_socks" translatable="true">SOCKS5</string>
+    <string-array name="singbox_outbound_entries" translatable="true">
+        <item>@string/singbox_outbound_http</item>
+        <item>@string/singbox_outbound_socks</item>
+    </string-array>
+    <string-array name="singbox_outbound_values" translatable="false">
+        <item>@string/singbox_outbound_http_value</item>
+        <item>@string/singbox_outbound_socks_value</item>
+    </string-array>
+    <string name="singbox_config_title" translatable="true">Advanced: custom JSON config</string>
+    <string name="singbox_config_summary" translatable="true">Leave empty to generate the config from the server fields above</string>
+    <string name="singbox_config_dialog_message" translatable="true">Paste a complete sing-box config.json. When set, the server fields above are ignored. Used locally only; never uploaded.</string>
+    <string name="singbox_config_generated" translatable="true">Generated: %1$s</string>
+    <string name="singbox_config_custom" translatable="true">Using custom JSON</string>
+    <string name="singbox_local_port_title" translatable="true">Local listen port</string>
+    <string name="singbox_local_port_summary" translatable="true">HTTP/SOCKS port exposed by sing-box on this device (default 2333)</string>
+    <string name="singbox_local_port_default_value" translatable="false">2333</string>
+    <string name="singbox_starting" translatable="true">Starting sing-box…</string>
+    <string name="singbox_stopping" translatable="true">Stopping sing-box…</string>
+    <string name="singbox_started" translatable="true">sing-box started (local proxy %1$s:%2$s)</string>
+    <string name="singbox_not_running" translatable="true">sing-box is not running</string>
+    <string name="singbox_error" translatable="true">sing-box failed to start: %1$s</string>
+    <string name="singbox_not_supported" translatable="true">This build does not include sing-box support.</string>
     <string name="did_you_mean">Did you mean \"%1$s\"?</string>
     <string name="search_showing_result_for">Showing results for: %s</string>
     <string name="share_dialog_title">Share with</string>

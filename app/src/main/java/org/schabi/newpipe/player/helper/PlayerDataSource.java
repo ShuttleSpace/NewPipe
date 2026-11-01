@@ -5,6 +5,7 @@ import static org.schabi.newpipe.MainActivity.DEBUG;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.database.StandaloneDatabaseProvider;
@@ -25,12 +26,14 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 
 import org.schabi.newpipe.DownloaderImpl;
 import org.schabi.newpipe.extractor.services.youtube.dashmanifestcreators.YoutubeOtfDashManifestCreator;
+import org.schabi.newpipe.util.ProxyConfig;
 import org.schabi.newpipe.extractor.services.youtube.dashmanifestcreators.YoutubePostLiveStreamDvrDashManifestCreator;
 import org.schabi.newpipe.extractor.services.youtube.dashmanifestcreators.YoutubeProgressiveDashManifestCreator;
 import org.schabi.newpipe.player.datasource.NonUriHlsDataSourceFactory;
 import org.schabi.newpipe.player.datasource.YoutubeHttpDataSource;
 
 import java.io.File;
+import java.net.Proxy;
 
 public class PlayerDataSource {
     public static final String TAG = PlayerDataSource.class.getSimpleName();
@@ -87,19 +90,23 @@ public class PlayerDataSource {
         instantiateCacheIfNeeded(context);
 
         // generic data source factories use DefaultHttpDataSource.Factory
-        cachelessDataSourceFactory = new DefaultDataSource.Factory(context,
-                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT))
+        final DefaultHttpDataSource.Factory cachelessInnerFactory =
+                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT);
+        final DefaultHttpDataSource.Factory cacheInnerFactory =
+                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT);
+
+        cachelessDataSourceFactory = new DefaultDataSource.Factory(context, cachelessInnerFactory)
                 .setTransferListener(transferListener);
         cacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
-                new DefaultHttpDataSource.Factory().setUserAgent(DownloaderImpl.USER_AGENT));
+                cacheInnerFactory);
 
         // YouTube-specific data source factories use getYoutubeHttpDataSourceFactory()
         ytHlsCacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
-                getYoutubeHttpDataSourceFactory(false, false));
+                getYoutubeHttpDataSourceFactory(false, false, context));
         ytDashCacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
-                getYoutubeHttpDataSourceFactory(true, true));
+                getYoutubeHttpDataSourceFactory(true, true, context));
         ytProgressiveDashCacheDataSourceFactory = new CacheFactory(context, transferListener, cache,
-                getYoutubeHttpDataSourceFactory(false, true));
+                getYoutubeHttpDataSourceFactory(false, true, context));
 
         // set the maximum size to manifest creators
         YoutubeProgressiveDashManifestCreator.getCache().setMaximumSize(MAX_MANIFEST_CACHE_SIZE);
@@ -199,10 +206,21 @@ public class PlayerDataSource {
 
     private static YoutubeHttpDataSource.Factory getYoutubeHttpDataSourceFactory(
             final boolean rangeParameterEnabled,
-            final boolean rnParameterEnabled) {
-        return new YoutubeHttpDataSource.Factory()
+            final boolean rnParameterEnabled,
+            @NonNull final Context context) {
+        final YoutubeHttpDataSource.Factory factory = new YoutubeHttpDataSource.Factory()
                 .setRangeParameterEnabled(rangeParameterEnabled)
                 .setRnParameterEnabled(rnParameterEnabled);
+
+        final Proxy proxy = ProxyConfig.getProxy(context);
+        if (proxy != null) {
+            factory.setProxy(proxy);
+            final String proxyAuth = ProxyConfig.getProxyAuthorizationHeader(context);
+            if (proxyAuth != null) {
+                factory.setProxyAuthorization(proxyAuth);
+            }
+        }
+        return factory;
     }
 
     private static void instantiateCacheIfNeeded(final Context context) {

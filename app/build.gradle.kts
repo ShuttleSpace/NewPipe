@@ -139,7 +139,33 @@ configure<ApplicationExtension> {
             )
         }
     }
+
+    // The bundled libbox AAR contains four ABIs and makes the universal APK very large.
+    // Build per-ABI APKs (plus a universal one) with -PabiSplits=true, e.g. in CI.
+    if (project.hasProperty("abiSplits")) {
+        splits {
+            abi {
+                isEnable = true
+                reset()
+                include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+                isUniversalApk = true
+            }
+        }
+    }
 }
+
+// libbox.aar is ~92 MB, so it is published as a GitHub release asset instead of being
+// committed. Download it on demand when it is missing (CI and fresh checkouts). The task
+// logic lives in buildSrc (DownloadLibboxTask) so it stays configuration-cache friendly.
+val downloadLibbox by tasks.registering(org.schabi.newpipe.gradle.DownloadLibboxTask::class) {
+    url.set(
+        providers.gradleProperty("libboxUrl").getOrElse(
+            "https://github.com/ShuttleSpace/NewPipe/releases/download/libbox/libbox.aar"
+        )
+    )
+    target.set(layout.projectDirectory.file("libs/libbox.aar"))
+}
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(downloadLibbox) }
 
 room3 {
     schemaDirectory("$projectDir/schemas")
@@ -271,6 +297,11 @@ dependencies {
     // HTTP client
     implementation(libs.squareup.okhttp)
     implementation(libs.squareup.okhttp.brotli)
+
+    // Built-in sing-box (libbox) - optional local proxy engine.
+    // The AAR is built from source (see scripts/build_libbox.sh) and is only present
+    // when the sing-box proxy mode is intended to be used.
+    implementation(files("libs/libbox.aar"))
 
     // Media player
     implementation(libs.google.exoplayer.core)
