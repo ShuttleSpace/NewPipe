@@ -41,6 +41,13 @@ jobs:
           java-version: "21"
           cache: "gradle"
 
+      - name: Prepare release signing keystore
+        if: ${{ secrets.NEWPIPE_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.NEWPIPE_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/newpipe-release.jks"
+          echo "NEWPIPE_KEYSTORE_FILE=$RUNNER_TEMP/newpipe-release.jks" >> "$GITHUB_ENV"
+          echo "Release keystore decoded."
+
       - name: Download libbox.aar (built-in sing-box engine)
         run: |
           mkdir -p app/libs
@@ -48,7 +55,21 @@ jobs:
             https://github.com/ShuttleSpace/NewPipe/releases/download/libbox/libbox.aar
 
       - name: Build per-ABI APKs
+        env:
+          NEWPIPE_KEYSTORE_PASSWORD: ${{ secrets.NEWPIPE_KEYSTORE_PASSWORD }}
+          NEWPIPE_KEY_ALIAS: ${{ secrets.NEWPIPE_KEY_ALIAS }}
+          NEWPIPE_KEY_PASSWORD: ${{ secrets.NEWPIPE_KEY_PASSWORD }}
         run: ./gradlew :app:assembleContinuous -PabiSplits=true -DskipFormatKtlint -x runKtlint -x runCheckstyle --stacktrace
+
+      - name: Verify APK signature
+        run: |
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | sort -V | tail -1)"
+          if [ -n "$BT" ]; then
+            for apk in app/build/outputs/apk/continuous/*.apk; do
+              echo "== $(basename "$apk") =="
+              "$BT/apksigner" verify --print-certs "$apk" 2>&1 | grep -E "Signer|DN:" | head -2 || true
+            done
+          fi
 
       - name: Upload APKs
         uses: actions/upload-artifact@v7
@@ -61,17 +82,17 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-          artifact: desktop-linux
-          path: desktopApp/build/compose/binaries/main/deb/**
-          ext: "*.deb"
+            artifact: desktop-linux
+            path: desktopApp/build/compose/binaries/main/deb/**
+            ext: "*.deb"
           - os: windows-latest
-          artifact: desktop-windows
-          path: desktopApp/build/compose/binaries/main/msi/**
-          ext: "*.msi"
+            artifact: desktop-windows
+            path: desktopApp/build/compose/binaries/main/msi/**
+            ext: "*.msi"
           - os: macos-latest
-          artifact: desktop-macos
-          path: desktopApp/build/compose/binaries/main/dmg/**
-          ext: "*.dmg"
+            artifact: desktop-macos
+            path: desktopApp/build/compose/binaries/main/dmg/**
+            ext: "*.dmg"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -93,6 +114,7 @@ jobs:
 
   release:
     needs: [android, desktop]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts

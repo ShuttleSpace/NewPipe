@@ -27,6 +27,19 @@ val normalizedWorkingBranch = workingBranch
     .replaceFirst("^[^A-Za-z]+".toRegex(), "")
     .replace("[^0-9A-Za-z]+".toRegex(), "")
 
+// Release signing material. In CI these come from repository secrets; locally they are
+// usually unset, in which case `release` stays unsigned and `continuous` keeps the debug
+// key (see buildTypes below).
+val releaseKeystoreFile = System.getenv("NEWPIPE_KEYSTORE_FILE")
+    ?.takeIf { it.isNotBlank() }
+    ?.let { file(it) }
+val releaseKeystorePassword = System.getenv("NEWPIPE_KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("NEWPIPE_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("NEWPIPE_KEY_PASSWORD") ?: releaseKeystorePassword
+val hasReleaseSigning = releaseKeystoreFile?.isFile == true &&
+    !releaseKeystorePassword.isNullOrBlank() &&
+    !releaseKeyAlias.isNullOrBlank()
+
 kotlin {
     jvmToolchain(21)
 }
@@ -57,6 +70,17 @@ configure<ApplicationExtension> {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = releaseKeystoreFile
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isDebuggable = true
@@ -72,6 +96,9 @@ configure<ApplicationExtension> {
         }
 
         release {
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             System.getProperty("packageSuffix")?.let { suffix ->
                 applicationIdSuffix = suffix
                 resValue("string", "app_name", "NewPipe $suffix")
@@ -86,7 +113,11 @@ configure<ApplicationExtension> {
 
         register("continuous") {
             initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             isDefault = true
 
             // suffix the app id and the app name with git branch name

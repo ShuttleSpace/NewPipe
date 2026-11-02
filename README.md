@@ -31,33 +31,53 @@
 >
 > <b>"NewPipe" IS A REGISTERED WORD MARK SUBJECT TO [ITS TRADEMARK POLICY](https://newpipe-ev.de/policy/trademark/). INFRINGING APPLICATIONS WILL NOT BE TOLERATED.</b>
 
-## Fork additions (ShuttleSpace/NewPipe `dev`)
+## Feature declaration (ShuttleSpace/NewPipe `dev`)
 
-This fork adds proxy support for restrictive networks (e.g. behind a GFW) and improves TV
-remote navigation. All new UI strings are translatable (default English, 简体中文 under
-`values-zh`).
+This is a fork of [NewPipe](https://github.com/TeamNewPipe/NewPipe) focused on **Android TV**
+and **restricted networks** (e.g. behind a GFW). Everything below is added on top of
+upstream; the app stays usable on phones as well. All new UI strings are translatable
+(default English, 简体中文 under `values-zh`).
 
-### Proxy modes (Settings → Proxy settings)
+### 1. Proxy modes (Settings → Proxy settings)
+
+> All proxy settings are stored **locally on the device only** and are never uploaded.
 
 - **Off** — unchanged upstream behaviour.
 - **HTTP proxy** — fill `host` / `port` and optional `user` / `password`, or paste a
-  `key=value` block to import them. An info button explains the format.
-- **LAN (Hiddify)** — point the TV at a Hiddify instance on another computer: enter the PC's
-  LAN IP and port (default `12334`), use **Scan LAN for Hiddify** to auto-discover it,
-  **Test connection** to verify reachability, then **Restart NewPipe now** for the change to
-  apply. On the PC, enable **Allow LAN** in Hiddify and allow the port through the OS
+  `key=value` block to import them. An info button explains the accepted format.
+- **LAN (Hiddify)** — point the TV at a Hiddify instance running on another computer: enter
+  the PC's LAN IP and port (default `12334`), use **Scan LAN for Hiddify** to auto-discover
+  it, **Test connection** to verify reachability, then **Restart NewPipe now** to apply the
+  change. On the PC, enable **Allow LAN** in Hiddify and allow the port through the OS
   firewall.
-- **Sing-box** — a built-in sing-box (`libbox`) engine. Fill the upstream
-  `host` / `port` / `user` / `password` (shared with the HTTP fields), choose the upstream
-  type (HTTP or SOCKS5), set the local listen port (default `2333`); the app generates the
-  config. Advanced users can paste a full `config.json` instead.
+- **Sing-box** — a built-in [sing-box](https://github.com/SagerNet/sing-box) (`libbox`)
+  engine. Fill the upstream `host` / `port` / `user` / `password` (shared with the HTTP
+  fields), choose the upstream type (HTTP or SOCKS5) and the local listen port (default
+  `2333`); the app generates the config. Advanced users can paste a full `config.json`.
 
-### TV / remote control
+### 2. TV / remote-control support
 
 - The network error panel keeps its **Report** button (opens `ErrorActivity` with the full
-  stack trace) and all buttons are reachable with the D-pad; the default focus is on
-  **Retry**.
-- See [doc/libbox.md](doc/libbox.md) for how the sing-box AAR is built and the pitfalls.
+  stack trace).
+- All error-panel buttons are reachable with the D-pad; the default focus is on **Retry**.
+- The proxy settings screen is fully navigable with the remote.
+
+### 3. Internationalisation
+
+- New strings live in `values/strings.xml` (English, default) with Chinese translations in
+  `values-zh/strings.xml`. No hard-coded Chinese in code or XML.
+
+### 4. Build / CI / release
+
+- [doc/libbox.md](doc/libbox.md) documents how the `libbox.aar` is built and the pitfalls;
+  [scripts/build_libbox.sh](scripts/build_libbox.sh) builds it in one command.
+- `.github/workflows/release-all.yml` builds Android (per-ABI + universal) and desktop
+  (Linux / Windows / macOS) artifacts and publishes them to a GitHub release.
+- Release APKs are signed with this fork's release keystore when it is provided to CI via
+  repository secrets (`NEWPIPE_KEYSTORE_BASE64`, `NEWPIPE_KEYSTORE_PASSWORD`,
+  `NEWPIPE_KEY_ALIAS`, `NEWPIPE_KEY_PASSWORD`). Without those secrets the `continuous` build
+  falls back to the Android debug key (fine for local sideloading, not for in-place
+  updates).
 
 ### Building
 
